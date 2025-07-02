@@ -1,6 +1,8 @@
 name: Android arm64-v8a Build
 
+# Запускается по пушу в main, pull request и вручную (workflow_dispatch)
 on:
+  workflow_dispatch:   # ручной запуск из интерфейса GitHub
   push:
     branches:
       - main
@@ -20,7 +22,7 @@ jobs:
     - name: Setup Android NDK
       uses: android-actions/setup-ndk@v2
       with:
-        ndk-version: '25.1.8937393'  # замени на нужную версию
+        ndk-version: '25.1.8937393'  # Замените на нужную версию NDK
 
     - name: Install Ninja and CMake
       run: |
@@ -56,4 +58,3 @@ jobs:
       with:
         name: built-arm64-libs
         path: build
-        
