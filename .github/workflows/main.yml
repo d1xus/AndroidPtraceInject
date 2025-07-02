@@ -1,0 +1,59 @@
+name: Android arm64-v8a Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_NDK_ROOT: /usr/local/android-ndk
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Android NDK
+      uses: android-actions/setup-ndk@v2
+      with:
+        ndk-version: '25.1.8937393'  # замени на нужную версию
+
+    - name: Install Ninja and CMake
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build cmake
+
+    - name: Prepare build directory
+      run: |
+        mkdir -p build
+        cd build
+        rm -rf *
+
+    - name: Build for arm64-v8a
+      run: |
+        cd build || { echo "FAILED to cd build !!"; exit 1; }
+        echo "Start to build ABI of arm64-v8a"
+        cmake .. -DANDROID_ABI=arm64-v8a -G Ninja
+        if [ $? -ne 0 ]; then
+          echo "FAILED to Configuring and Generating Build files !!"
+          exit 1
+        fi
+        cmake --build .
+        if [ $? -ne 0 ]; then
+          echo "FAILED to build !!"
+          exit 1
+        fi
+        rm -rf *
+        cd ..
+
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: built-arm64-libs
+        path: build
+        
