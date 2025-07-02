@@ -1,6 +1,6 @@
 # Android Ptrace Inject
 
-![](https://img.shields.io/badge/Android-Build-green)
+![](https://img.shields.io/badge/Android-Build-green)л
 ![](https://img.shields.io/badge/Android%204~12-Support-green)
 ![](https://img.shields.io/badge/arm64--v8a-Support-green)
 ![](https://img.shields.io/badge/x86-Support-green)
