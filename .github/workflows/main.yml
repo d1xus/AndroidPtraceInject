@@ -1,68 +1,71 @@
-name: Android arm64-v8a Build
+name: 🚀 Android arm64-v8a Build Pipeline
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
   pull_request:
+    branches:
+      - master
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build for Android arm64-v8a
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_NDK_VERSION: '25.1.8937393'
+      ANDROID_NDK_VERSION: r25b  # Укажи нужную версию NDK здесь
 
     steps:
-    - name: Checkout code
+    - name: 🔄 Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install dependencies
+    - name: ⚙️ Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y ninja-build cmake unzip wget
 
-    - name: Download Android NDK
+    - name: 📥 Download Android NDK ($ANDROID_NDK_VERSION)
       run: |
-        NDK_VERSION=${{ env.ANDROID_NDK_VERSION }}
-        NDK_ZIP=android-ndk-r${NDK_VERSION}-linux.zip
-        NDK_URL=https://dl.google.com/android/repository/${NDK_ZIP}
-        echo "Downloading NDK version $NDK_VERSION..."
-        wget -q --show-progress $NDK_URL -O $NDK_ZIP
-        unzip -q $NDK_ZIP
-        mv android-ndk-r$NDK_VERSION android-ndk
-        echo "NDK downloaded and extracted."
+        echo "Downloading NDK version $ANDROID_NDK_VERSION..."
+        NDK_ZIP="android-ndk-${ANDROID_NDK_VERSION}-linux.zip"
+        NDK_URL="https://dl.google.com/android/repository/${NDK_ZIP}"
+        wget --progress=dot:giga "$NDK_URL" -O "$NDK_ZIP"
+        unzip -q "$NDK_ZIP"
+        mv "android-ndk-${ANDROID_NDK_VERSION}" android-ndk
+        echo "✅ NDK downloaded and extracted."
 
-    - name: Set ANDROID_NDK_ROOT env variable
+    - name: 🌐 Set ANDROID_NDK_ROOT environment variable
       run: echo "ANDROID_NDK_ROOT=$PWD/android-ndk" >> $GITHUB_ENV
 
-    - name: Prepare build directory
+    - name: 🧹 Prepare build directory
       run: |
         mkdir -p build
         cd build
         rm -rf *
 
-    - name: Build for arm64-v8a
+    - name: 🛠️ Configure and build project for arm64-v8a
       run: |
-        cd build || { echo "FAILED to cd build !!"; exit 1; }
-        echo "Start to build ABI of arm64-v8a"
+        cd build || { echo "❌ Failed to enter build directory"; exit 1; }
+        echo "🏗️ Starting build for ABI: arm64-v8a"
         cmake .. -DANDROID_ABI=arm64-v8a -DANDROID_NDK=$PWD/android-ndk -G Ninja
         if [ $? -ne 0 ]; then
-          echo "FAILED to Configuring and Generating Build files !!"
+          echo "❌ CMake configuration failed"
           exit 1
         fi
         cmake --build .
         if [ $? -ne 0 ]; then
-          echo "FAILED to build !!"
+          echo "❌ Build failed"
           exit 1
         fi
+        echo "✅ Build succeeded"
         rm -rf *
         cd ..
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+    - name: 📦 Upload build artifacts
       if: success()
+      uses: actions/upload-artifact@v4
       with:
-        name: built-arm64-libs
+        name: arm64-build-artifacts
         path: build
